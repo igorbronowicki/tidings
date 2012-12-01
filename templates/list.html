@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <title>[%title%]</title>
+    <link rel="stylesheet/less" type="text/css" href="/static/style.less" media="screen" />
+    <script type="text/javascript" src="/static/less.js"></script>
+</head>
+<body>
+    <h1>[%title%]</h1>
+    <ul>
+        <li><a href="/list">List</a></li>
+        <li><a href="/add">Add</a></li>
+    </ul>
+    <table>
+        <tr>
+            <td>
+                <p>[%= note.time %] by <b>[%= note.author %]</b></p>
+                <p>[%= note.note %]</p>
+            </td>
+            <td>
+                <form method="get" action="/del">
+                    <input type="submit" value="Delete" />
+                    <input type="hidden" name="id" value="[%= note._id %]" />
+                </form>
+            </td>
+            <td>
+                <form method="get" action="/edit">
+                    <input type="submit" value="Edit" />
+                    <input type="hidden" name="id" value="[%= note._id %]" />
+                </form>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
