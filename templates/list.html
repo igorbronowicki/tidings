@@ -13,6 +13,7 @@
         <li><a href="/add">Add</a></li>
     </ul>
     <table>
+        [% notes.forEach(function(note) { %]
         <tr>
             <td>
                 <p>[%= note.time %] by <b>[%= note.author %]</b></p>
@@ -31,6 +32,7 @@
                 </form>
             </td>
         </tr>
+        [% }); %]
     </table>
 </body>
 </html>

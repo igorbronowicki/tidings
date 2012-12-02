@@ -8,7 +8,7 @@ var url = require('url');
 var app = express();
 
 
-// configuration
+// app configuration
 app.engine('html', require('ejs').__express);
 app.set('views', __dirname + '/templates');
 app.set('view engine', 'html');
@@ -16,6 +16,27 @@ app.use('/static', express.static(__dirname + '/public'));
 app.use(express.logger());
 app.use(express.bodyParser());
 
+// my custom middleware
+var parseUrlParams = function(req, res, next) {
+    req.urlP = url.parse(req.url, true);
+    next();
+}
+
+// db configuration
+var dbURL = 'mongodb://localhost/tidings';
+
+var NoteSchema = new mongoose.Schema({
+    "time": {
+        "type": Date,
+        "default": Date.now
+    },
+    "author": String,
+    "note": String
+});
+
+var Note = mongoose.model('Note', NoteSchema);
+
+mongoose.connect(dbURL);
 
 // routes
 
@@ -26,14 +47,15 @@ app.get('/', function(req, res) {
 
 // Страница списка новостей
 app.get('/list', function(req, res) {
-    // TODO: Берем из БД список новостей
-    res.render('list', {
-        title: "Новости",
-        note: {
-            "_id": "4323-4322-4324",
-            "time": "03 May",
-            "author": "DJ 108",
-            "note": "Gcsdcs scsdcs sdc sdc sdc sc sdc sdc sdc dsc ds c sdc sdc."
+    // Извлекаем все записи из БД
+    Note.find({}, function(error, notes) {
+        if (error) {
+            // show error
+        } else {
+            res.render('list', {
+                title: "Новости",
+                notes: notes
+            });
         }
     });
 });
@@ -53,18 +75,34 @@ app.get('/add', function(req, res) {
 
 // Обработка запроса на добавление записи
 app.post('/add', function(req, res) {
-    // TODO: Добавить запись в БД
-    res.redirect('/list'); // после добавления записи в БД переходим на стр. просмотра списка новостей
+    // Добавляем новую запись в БД
+    Note.create({
+        "author": req.body.author,
+        "note": req.body.note
+    }, function(error) {
+        if (error) {
+            // show error
+        } else {
+            res.redirect('/list'); // после добавления записи в БД переходим на стр. просмотра списка новостей
+        }
+    });
 });
 
 // Обработка запроса на удаление записи
-app.get('/del', function(req, res) {
-    // TODO: Удалить запись из БД
-    res.redirect('/list'); // после удаления записи из БД переходим на стр. просмотра списка новостей
+app.get('/del', parseUrlParams, function(req, res) {
+    Note.remove({
+        "_id": req.urlP.query.id
+    }, function(error) {
+        if (error) {
+            // show error
+        } else {
+            res.redirect('/list'); // после удаления записи из БД переходим на стр. просмотра списка новостей
+        }
+    });
 });
 
 // Отрисовка формы изменения записи
-app.get('/edit', function(req, res) {
+app.get('/edit', parseUrlParams, function(req, res) {
     // TODO: Найти запись в БД и подставить данные в форму
     res.render('addedit', {
         title: "",
