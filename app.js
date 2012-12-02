@@ -90,6 +90,7 @@ app.post('/add', function(req, res) {
 
 // Обработка запроса на удаление записи
 app.get('/del', parseUrlParams, function(req, res) {
+    // Удаляем запись из БД по ее _id
     Note.remove({
         "_id": req.urlP.query.id
     }, function(error) {
