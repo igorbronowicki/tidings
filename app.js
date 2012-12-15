@@ -38,6 +38,11 @@ var Note = mongoose.model('Note', NoteSchema);
 
 mongoose.connect(dbURL);
 
+var emptyNote = {
+    "author": "",
+    "note": ""
+}
+
 // routes
 
 // Главная страница сайта. Переадресация на страницу списка новостей.
@@ -65,11 +70,7 @@ app.get('/add', function(req, res) {
     res.render('addedit', {
         title: "Новости",
         postpath: "/add",
-        note: {
-            "time": "",
-            "author": "",
-            "note": ""
-        }
+        note: emptyNote
     });
 });
 
@@ -104,23 +105,41 @@ app.get('/del', parseUrlParams, function(req, res) {
 
 // Отрисовка формы изменения записи
 app.get('/edit', parseUrlParams, function(req, res) {
-    // TODO: Найти запись в БД и подставить данные в форму
-    res.render('addedit', {
-        title: "",
-        postpath: "/edit",
-        note: {
-            "_id": "4323-4322-4324",
-            "time": "03 May",
-            "author": "DJ 108",
-            "note": "Gcsdcs scsdcs sdc sdc sdc sc sdc sdc sdc dsc ds c sdc sdc."
+    Note.findOne({
+        "_id": req.urlP.query.id
+    }, function(error, note) {
+        if (error) {
+            // show error
+        } else {
+            res.render('addedit', {
+                title: "Новости",
+                postpath: "/edit",
+                note: note
+            });
         }
     });
 });
 
 // Обработка запроса на изменение записи
 app.post('/edit', function(req, res) {
-    // Изменить запись в БД
-    res.redirect('/list'); // после изменения записи в БД переходим на стр. просмотра списка новостей
+    Note.findOne({
+        "_id": req.body.id
+    }, function(error, note) {
+        if (error) {
+            // show error
+        } else {
+            note.time = new Date();
+            note.author = req.body.author;
+            note.note = req.body.note;
+            note.save(function(error) {
+                if (error) {
+                    // show error
+                } else {
+                    res.redirect('/list'); // после изменения записи в БД переходим на стр. просмотра списка новостей
+                }
+            });
+        }
+    });
 });
 
 // Чтобы не рисовать стр. 404, все страницы видут на стр. списка новостей
